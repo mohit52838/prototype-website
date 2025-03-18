@@ -3,12 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWater, faShieldAlt, faFire, faTimes, faClock, faBell } from '@fortawesome/free-solid-svg-icons';
 
+// Helper function to generate random dates within the last two months
+const getRandomDate = () => {
+  const now = new Date();
+  const twoMonthsAgo = new Date(now);
+  twoMonthsAgo.setMonth(now.getMonth() - 2);
+
+  const randomTimestamp = twoMonthsAgo.getTime() + Math.random() * (now.getTime() - twoMonthsAgo.getTime());
+  const randomDate = new Date(randomTimestamp);
+
+  // Format the date and time
+  const date = randomDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const time = randomDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  return `${date} ${time}`;
+};
+
 // Simulated API call to fetch alerts
 const fetchAlerts = () => {
   return Promise.resolve([
-    { id: 1, type: 'flood', message: 'Flood alert in Pune', details: 'Severe flooding reported in low-lying areas.', urgent: true, timestamp: '2023-10-25 10:30 AM' },
-    { id: 2, type: 'earthquake', message: 'Earthquake in Mumbai', details: 'Magnitude 5.5 earthquake reported.', urgent: false, timestamp: '2023-10-24 09:15 AM' },
-    { id: 3, type: 'wildfire', message: 'Wildfire in Delhi', details: 'Wildfire spreading in the northern region.', urgent: false, timestamp: '2023-10-23 04:45 PM' },
+    { id: 1, type: 'flood', message: 'Flood alert in Pune', details: 'Severe flooding reported in low-lying areas.', urgent: true, timestamp: getRandomDate() },
+    { id: 2, type: 'earthquake', message: 'Earthquake in Mumbai', details: 'Magnitude 5.5 earthquake reported.', urgent: false, timestamp: getRandomDate() },
+    { id: 3, type: 'wildfire', message: 'Wildfire in Delhi', details: 'Wildfire spreading in the northern region.', urgent: false, timestamp: getRandomDate() },
   ]);
 };
 

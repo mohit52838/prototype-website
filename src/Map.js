@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'; // Removed unused imports
+import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.css'; // Geocoder CSS
-import * as Geocoder from 'leaflet-control-geocoder'; // Geocoder library
+import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
+import 'leaflet-control-geocoder';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -13,46 +13,78 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-export default function Map() {
-  return (
-    <MapContainer
-      center={[20.5937, 78.9629]} // Center of India
-      zoom={5}
-      style={{ height: '400px', width: '100%' }} // Map size
-      zoomControl={true} // Enable default zoom control
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
+// Simulated disaster data (replace with actual data source)
+const disasterData = [
+  { id: 1, type: 'flood', location: [18.5204, 73.8567], message: 'Flood alert in Pune', details: 'Severe flooding reported in low-lying areas.', timestamp: '2023-10-25 10:30 AM' },
+  { id: 2, type: 'earthquake', location: [19.076, 72.8777], message: 'Earthquake in Mumbai', details: 'Magnitude 5.5 earthquake reported.', timestamp: '2023-10-24 09:15 AM' },
+  { id: 3, type: 'wildfire', location: [28.7041, 77.1025], message: 'Wildfire in Delhi', details: 'Wildfire spreading in the northern region.', timestamp: '2023-10-23 04:45 PM' },
+];
 
-      {/* Add geocoder control (search bar) */}
-      <GeocoderControl />
-    </MapContainer>
+export default function Map() {
+  const mapRef = useRef(null);
+
+  return (
+    <div style={{ height: '400px', width: '100%' }}>
+      {!mapRef.current && (
+        <MapContainer
+          center={[20.5937, 78.9629]}
+          zoom={5}
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={true}
+          whenCreated={(map) => (mapRef.current = map)}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <GeocoderControl />
+          {/* Render disaster markers with default pins */}
+          {disasterData.map((disaster) => (
+            <Marker
+              key={disaster.id}
+              position={disaster.location}
+              eventHandlers={{
+                mouseover: (e) => e.target.openPopup(),
+                mouseout: (e) => e.target.closePopup(),
+              }}
+            >
+              <Popup>
+                <div className="popup-content">
+                  <h3>{disaster.message}</h3>
+                  <p>{disaster.details}</p>
+                  <small>{disaster.timestamp}</small>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+    </div>
   );
 }
 
-// Geocoder control component (search bar)
+// Geocoder control (search bar)
 function GeocoderControl() {
   const map = useMap();
+  const geocoderRef = useRef(null);
 
   useEffect(() => {
-    const geocoder = Geocoder.geocoder({
-      defaultMarkGeocode: false, // Don't automatically add a marker
-      placeholder: 'Search for a location...', // Search bar placeholder
-      errorMessage: 'Location not found.', // Error message
+    if (geocoderRef.current) return;
+
+    const geocoder = L.Control.geocoder({
+      defaultMarkGeocode: false,
+    }).on('markgeocode', (e) => {
+      const { center, name } = e.geocode;
+      map.setView(center, 10);
+      L.marker(center).addTo(map).bindPopup(name).openPopup();
     });
 
-    geocoder
-      .on('markgeocode', (e) => {
-        const { center } = e.geocode;
-        map.setView(center, 10); // Zoom to the searched location
-        L.marker(center).addTo(map).bindPopup(e.geocode.name).openPopup(); // Add a marker at the searched location
-      })
-      .addTo(map);
+    map.addControl(geocoder);
+    geocoderRef.current = geocoder;
 
     return () => {
-      geocoder.remove(); // Cleanup on unmount
+      map.removeControl(geocoder);
+      geocoderRef.current = null;
     };
   }, [map]);
 

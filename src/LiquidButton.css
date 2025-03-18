@@ -1,0 +1,50 @@
+.liquid-button {
+    position: relative;
+    padding: 20px 40px; /* Larger buttons */
+    font-size: 1.2rem; /* Larger font size */
+    font-weight: 600;
+    color: var(--text-color, #ffffff);
+    background: linear-gradient(
+      135deg,
+      var(--color1, #36dfe7), /* Blue */
+      var(--color2, #8f17e1), /* Purple */
+      var(--color3, #e509e6) /* Pink */
+    );
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .liquid-button .liquid {
+    position: absolute;
+    top: var(--y, 50%);
+    left: var(--x, 50%);
+    transform: translate(-50%, -50%);
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.6), /* Increased opacity for liquid effect */
+      rgba(255, 255, 255, 0) 70%
+    );
+    opacity: var(--liquid-opacity, 0.8); /* Increased default opacity */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .liquid-button:hover .liquid {
+    opacity: 1; /* Full opacity on hover */
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  
+  .liquid-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .liquid-button-text {
+    position: relative;
+    z-index: 1;
+  }
